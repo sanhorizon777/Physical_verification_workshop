@@ -460,6 +460,26 @@ Let's look at exercise4.mag which has wells and taps, so our DRC check needs to 
 To fix this, we first paint a layer of n type material into the n well. The layer is called nsubstratendiff. Though this does not fix the DRC error.The n well must not be floating, so the tap should be connected to a layer of local interconnect. So let us do this by painting a layer of nsubstratencontact. While this gets rid of the n-well DRC error, it creates smaller errors like overlap and surround.
 ![nwell_tap_contact_error](https://user-images.githubusercontent.com/109404741/195703775-1d9fe89a-d9db-4dc8-906f-41b9303920c2.PNG)
 
+Let us adjust the layers using what we have learnt till now by growing, stretching and adding in local interconnect, and we get no DRC errors.
+![nwell_tap_contact_error_fixed](https://user-images.githubusercontent.com/109404741/195703910-3e1a97d7-4e6d-4d5d-a1cd-4bee36414c0c.PNG)
+
+## Angle And Overlap Rule
+If we recall, Magic has a grid set up that is based on the manufacturing grid provided. The manufacturing grid for this process is 0.005um x 0.005um. Magic scales up the grid by a factor of 2, so the smallest box possible should be 0.01um by 0.01um. To make the box any smaller, we can use snap internal then make the box to the size of the manufacturers grid. We could also scale down Magic's internal grid with scalegrid 1 2, but it is prohibited.
+
+Similarly, if we create a tringle that is an odd number width, and overlap it with another odd width triangle, magic will try to legalise the overlap vertex as follows.
+![Auto Legalization](https://user-images.githubusercontent.com/109404741/195704826-d205998d-8db5-40eb-a1bb-050d1f7824b8.PNG)
+
+The next DRC error is due to a local interconnect having a corner cut. Local interconnects are not allowed to have corner cuts.
+![local interconnect drc error](https://user-images.githubusercontent.com/109404741/195705112-45fa6759-0038-4573-a21d-9910c9979431.PNG)
+Tp fix this error we can simply draw a box covering the cut area and fill it with Local interconnect material. This will fix the error as follows:
+![local interconnect drc error_fixed](https://user-images.githubusercontent.com/109404741/195705300-dd6d9498-a3b1-4ab0-a605-b2247cd4159e.PNG)
+
+we have another angle error. The shapes seems to be 45 degree angled, but by selecting it and querying the box, we see it is actual 201x200 units on the grid, leading to an angle just smaller than 45 degrees.
+![metal1_drc_error](https://user-images.githubusercontent.com/109404741/195705448-cb368a0a-5d03-4751-8ba9-099a6086df7f.PNG)
+ Since, the error is due to the angle of cut being less than 45 degrees we can check for the measurements of the height and base width of the triangle formed by it as follows:
+![metal1_drc_error_dimensions](https://user-images.githubusercontent.com/109404741/195705637-29c1984e-bb79-4152-a1f0-1278f2b36a7e.PNG)
+We can fix this error if we make the dimensions of the height and base width equal and then paint the south west or lower diagonal area of the box with metal1 as follows:
+![metal1_drc_error_fixed](https://user-images.githubusercontent.com/109404741/195705835-d6cba793-53a7-411c-a60a-021ef081e806.PNG)
 
 
 
