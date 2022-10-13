@@ -481,6 +481,69 @@ we have another angle error. The shapes seems to be 45 degree angled, but by sel
 We can fix this error if we make the dimensions of the height and base width equal and then paint the south west or lower diagonal area of the box with metal1 as follows:
 ![metal1_drc_error_fixed](https://user-images.githubusercontent.com/109404741/195705835-d6cba793-53a7-411c-a60a-021ef081e806.PNG)
 
+Next we have an overlap error. This is because the poly and diff layers are in different cells, and then made to overlap. While this should create a transistor in the overlap, because the two layers are in different cells, Magic does not allow this. The error is as follows:
+![overlap_drc_error](https://user-images.githubusercontent.com/109404741/195706099-5823769b-8413-4c55-8b93-f6adc0616edc.PNG)
+
+The easiest way to fix this is to just paint over the poly subcell again with a layer of poly, and preferably delete the old poly subcell layer. This creates a nmos as shown below:
+![overlap_drc_error_fixed](https://user-images.githubusercontent.com/109404741/195706178-dcdcf4fa-da28-442f-a685-27502fba6543.PNG)
+
+## Latch-up and Antenna Rules
+In exercise_9.mag, we have a layout with standard cells that violates some of the basic rules we saw earlier, as well as depicts latch-up violations. There are 3 errors:
+![latch_up_drc_errors](https://user-images.githubusercontent.com/109404741/195706443-436adca6-4cb7-4a12-8082-1f18261e1b20.PNG)
+
+First, we must add taps to the diffusion layers. Since it is a standard cell, it should come with a tap cell that is part of the standard cell library. We can place down the tap cell as follows.
+![latch_up_drc_errors_1fixed_tap](https://user-images.githubusercontent.com/109404741/195706617-142d1046-4c37-462b-876d-dc6a52caecc0.PNG)
+
+Now, we can select and move the tap cell to align it properly with the other cells, thus fixing the error.
+![latch_up_drc_errors_fixed](https://user-images.githubusercontent.com/109404741/195706660-ead73a7e-1e46-421e-8a7d-59e5ba5af51e.PNG)
+
+Next, we can look at ERC or electrical rule checks, specifically antenna rules. Let us look at exercise_10.mag, which has a few standard cell layout with very long route between them. This long route of metal layer will create the Antenna error. To do this using Magic we must first extract the design locally and then run the command ```antennacheck```. 
+To view the errors run the command ```antennacheck debug``` followed by ```antennacheck``` as follows:
+![Antennacheck_errors](https://user-images.githubusercontent.com/109404741/195707701-b992703b-5a6c-4977-ad37-8f1e4f784362.PNG)
+This gives us antenna ratios that triggered the error. The ratio of the area of the metal to the area of the gate is more than twice the permissible value of 400. There are 2 ways to fix this. First, we can tie down the route to a piece of diffusion (which acts like a diode). The antenna check tells us the error is at metal2, so we can place a standard cell diffusion diode anywhere at metal2. In this example, the diode is already places on th left of the cell, and we just need to wire the input where the violation starts to the diode as shown below. The wire needs to be contacted down into the diode with the SHIFT+right MB.
+![Antenna_drc_errors_fixed](https://user-images.githubusercontent.com/109404741/195707849-df26048c-0939-434a-a290-1061cde38ad8.PNG)
+
+Now, if we extract and run an antenna check, we see no feedback and no error message. This means the antenna violation is cleared. Another way to fix an antenna violation is to manually check the route path and fix it.
+![Antenna_problem](https://user-images.githubusercontent.com/109404741/195708101-5ce1ae67-2974-4075-913b-479bedc5b240.PNG)
+
+We can hide the metal3 and via layers above the metal2 layer to get a clearer grasp of the antenna formation. This is done below. he metal2 route forms an antenna before the next layer of metal3 is fabricated over it during manufacturing. Now that we know the only thing causing the long metal2 rout to be untied during manufacturing is that single metal3 route, we can easily replace it with metal2 to ensure both ends are tied.
+![antenna no error method 2](https://user-images.githubusercontent.com/109404741/195708429-67ddd1cf-5ff4-4252-95c9-9318afd4a158.PNG)
+
+## Density Rules
+SkyWater uses a window size of 700 by 700 microns to run density checks. Let us look at exercise10.mag, which has a large layout containing metal1 and metal2 layers. Here, the metal1 layer is just a thin section going around the layout, which depicts under-density for that metal layer. Similarly, metal2 covers pretty much the entire layout, leading to over-density for the metal2 layer. To check for density coverage, we use the following commands:
+
+```cif cover MET1```  This shows the area coverage of Metal1
+
+```cif cover MET2``` This shows the area coverage of Metal2
+
+```cif cover metal_layer``` doesnot tell us anything about the density and also errors in density in a cell. This required a manipulation in the GDS file of the layout. The manipulation is done by a python script (.py) and takes the GDS file as an input and checks for density errors. This script is provided as a part of the skywater PDK. The following steps were used for density check:
+
+1. Create the GDS file using the command  ```gds write exercise_11```
+
+2. Open a new terminal to run the python script in the working folder as follows:``` /usr/share/pdk/sky130A/libs.tech/magic/check_density.py exercise_11.gds```
+
+After running this the following density errors were shown:
+![Density errors](https://user-images.githubusercontent.com/109404741/195710093-028973b8-14d3-4031-b0bd-6f84cdc62ddb.PNG)
+
+To remove the density errors another python script is provided by skywater PDK. In the terminal write the following command:
+
+``` /usr/share/pdk/sky130A/libs.tech/magic/generate_fill.py exercise_11.mag```
+
+This above command will generate a GDS file in the mag folder. To read the GDS file open the magic command box and type the command ```gds read exercise_11_fill_pattern```. This will open the layout and on runnig DRC checks the density errors do not pop up anymore.
+![Density errors_fixed](https://user-images.githubusercontent.com/109404741/195710818-06a6fd99-392f-4cc6-8b15-32808a7c21c6.PNG)
+
+Now, we can view just the metal2 layer in the layout to confirm that the fill patterns align perfectly after the merge.
+![Density errors_fixed_m2fill](https://user-images.githubusercontent.com/109404741/195710973-9ab0c4cb-7d44-46a4-80e9-0ded3a45511b.PNG)
+
+
+
+
+
+
+
+
+
+
 
 
 
