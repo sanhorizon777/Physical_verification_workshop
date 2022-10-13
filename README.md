@@ -122,14 +122,86 @@ Now we can run LVS by entering the netgen subdirectory and using the command ```
 From the above picture we can see the result after running LVS. At the end it says the the two netlists match. So, we can confirm that our layout perfectly complies
 with the Schematic.
 
+# Day 2 -  Design Rule Checks and Layout Vs. Simulation
+## Data formats 
+For standardisation in order to describe ICs, standard file formats are required. These are mainly data describing the layout and some metadata which consists of labels, cells etc.
+Some common file formats are:
+-  Caltech Intermediate form (.cif)
+-  GDSII stream format
+-  Open Artwork System Interchange Standard (OASIS)
+-  
+The GDSII format is now the industry standard accross foundries for representing IC layouts.
 
+### Extraction Styles in Magic
+  Since we need to generate SPICE netlist from Magic tool we have to extract. Magic provides several extraction options. They are listed below:
+  
+ext2spice lvs
+ext2spice cthresh value
+ext2spice scale on|off
+ext2spice hierarchy on|off
+ext2spice subcircuit top on|off
+ext2spice global on|off
+ext2spicemerge on|off
 
+### GDS Reading and Writing in Magic
+For read and GDS file we run the command ```gds read file_name``` in the command window.
+Some important read options for gds files in magic are listed below.
 
+```
+gds readonly true|false  //Allows ceratin cells to be read-only, preventing magic from changing their gds descriptions in the final output gds file
+gds flatglob expression  //Flattens cells in question to be merged up into the hierarchy above them, preventing unnecessary heierarchy in the layout
+gds flatten true
+gds noduplicates true    //Tells magic to ignore cell definitions in gds files that it already has in memory
+```
 
+For writing gds files we can use the command ```gds write file_name```.
 
+Some of its options are listed below.
 
+```
+gds library true      //Used to create gds library files with subcells with no concept of a top level layout
+gds addendum true     //Ignores read-only cell definitions when it generates an output
+gds merge true|false  //Turns rectangles and triangles present in the design into merged polygons for easier viewing
+```
+## DRC Rules
+Magic layout has three DRC styles they are FULL, FAST and ROUTING.
 
+The following commands are used for setting the DRC styles:
 
+1. ```drc(full)``` - complete checks (slow)
+2. ```drc(fast)``` - typical checks (fast)
+3. ```drc(routing)``` - metal checks (fastest)
+
+The two basic DRC rule checking methods in Magic are,
+
+1. Edge-based rules (spacing, width, surround, extend)
+2. Boolean geometry rules (AND, XOR, GROW, SQUARES, etc.)
+
+## LVS Setup for Netgen
+Netgen is the tool that is used for running LVS on the two netlists generarted by the Schematic tool and the layout tool. It doesnot perform any functional validation just checks for netlist mismatch.
+
+## XOR Verification
+
+This is also a type of verification and is mainly used for mask revisions. Two layouts are compared using XOR test. When two layouts have the same components at a particular region it will show nothing in the result file. So, the result file of the XOR test only shows the portions that are different or not present in either of the two layouts. Below shows an example of how XOR test works.
+
+![XOR test example](https://user-images.githubusercontent.com/109404741/195673847-f940127d-d560-47e1-aef3-8f23222096fb.PNG)
+
+To run XOR test of two layouts the following commands are used:
+```
+load layout1_name
+flatten destination_name
+load layout2_name
+xor destination_name
+```
+## Reading GDS
+ The following command was used to read the GDS files of the standard sky130 PDK library cells:
+ 
+ ![Command for reading gds library of sky130 pdk](https://user-images.githubusercontent.com/109404741/195674695-df399f6b-a156-45be-868e-9bdc514fa769.PNG)
+This will load all the standard GDS files and can be accessed using Magic tool by going to options and then cell manager and selecting any one of the cells for viewing the GDS file.
+
+![opening and2_1 cell from options-cell manager](https://user-images.githubusercontent.com/109404741/195675168-da047be9-4e84-4e64-9419-42af13a6a88a.PNG)
+
+For the workshop Laboratory we chose the AND2_1 cell.
 
 
 
