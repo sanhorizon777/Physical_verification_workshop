@@ -287,8 +287,198 @@ The following is the result of the XOR test:
  ![xor test 2](https://user-images.githubusercontent.com/109404741/195695344-ee537777-a24e-432f-a45f-d2a933d24e1c.PNG)
 So, this only shows the unoverlapped portions of the layouts.
 
+# Day 3 - Design Rule Checking (DRC)
+Silicon manufacturing processes have some tolerance limit which are defined by certain set of design rules that needs to be taken care of by the Physical design engineers. To assist this process layout tools have DRC programs running in the background which marks the regions of error with white dots.
 
-   
+The Skywater process has its own design rules which can be read from this link : https://skywater-pdk.readthedocs.io/en/latest/rules.html
+
+### Back-end Metal Layer Rules
+
+**1. Width Rule**
+* Gives the minimum width of a layer.
+* Not adhering to this can cause spot defects to be larger than the width of the layer itself, causing open circuits in wires.
+* Minimum width for implants are given based on angle of implant and crystalline structure of the silicon. Implants in layer with very small widths may not act like they are supposed to.
+* Feature size of a process gives the minimum width of a transistor (or its polysilicon layer)
+
+**2. Spacing Rule**
+* Gives the minimum spacing between two layers.
+* Not adhering to spacing rales may cause material defects creating shorts between layers.
+* Has several complications based on optical effects of the mask.
+
+**3. Wide-Spacing Rule**
+* If a wire or piece of layout is wider than a given distance, then other wires of any width must be kept away from it by an additional amount of space.
+
+**4. Notch Rule**
+* Similar to the spacing rule (generally the same in most processes).
+* Gives the minimum space between two forks of the same piece of layer.
+
+**5. Minimum and Maximum Area Rules**
+* Gives the minimum and maximum areas for a metal layer.
+* Prevents delamination issues in the metal surface.
+* Implants only have minimum area rules, due to concerns same as that of the width rule.
+
+**6. Minimum Hole Area Rule**
+* Gives the minimum are a hole in a metal layer must be.
+* Small holes in a metal layer make it more likely that oxide grown over the hole may not completely fill it.
+
+**7. Contact Cut Rules**
+* A Via is the contact cuts made between metal layers to connect them using other metals.
+* As the holes connect layers from above and below, their positioning is critical.
+* Contact cut rules ensure masks can be positioned correctly.
+* Contact cuts must be surrounded by a minimum amount of metal around them.
+* Magic displays arrays of contact cuts for the same layer to layer connect as a single large contact cut (via) for design simplicity.
+
+### Local Interconnect Rules
+
+Most foundry processes go directly from polysilicon layers to aluminium (metal1). SkyWater uses local interconnect layers as routing layers between polysilicon and metal layers. Rules for this layer are based on physical properties of the material, mainly its resistance per square.
+
+The aspect ratio of any uncontacted local interconnect layer should generally be greater than 1:10. Generally, local interconnect should only be used to connect nearby layers and not for longer routing.
+
+### Front-end Rules
+
+These are rules that are device specific, and generally do not need to be handled with unless designing standard cells or designing special layouts that don't use standard cells. In Magic, the user can use the parameterized device generator which will automatically generate a device that satisfies and adheres to these device specific rules.
+
+MOSFET transistors have minimum gate width and length rules to account for the alignment between the diffusion and polysilicon masks. There are also field poly to diffusion spacing rules to prevent accidental transistors from forming. The gate poly to diffusion contact rule specifies how close the drain and source contacts can get to the gate.
+
+### Wells, Taps and Net Rules
+
+A tap is a region of diffusion that is doped with the opposite implant type of the transistor source or drain. Taps sit inside wells, and are of the same doping type as the well, making them electrically connected. The tap forms a connection to the well to set the bias voltage specifically, so that the p-n junction formed between the transistor and its surroundings is firmly reverse biased, keeping the transistor from leaking more than an acceptable amount of current.
+
+Standard cell taps follow one set of rules which keeps p and n type diffusions separated from them by a minimum amount of distance, known as the diffusion to tap spacing rule. There are also butted taps, which keep the p and n taps sharing the same diffusion region, and have extra rules associated with them.
+
+Same-net spacing rules pertain to wells, most often applied if two n-well regions on different nets must have extra spacing between them, more than the minimum specified spacing between any 2 n wells.
+
+### Deeps N-Well and High Voltage Rules
+
+Deep n-wells are used to decrease noise coupling effects in p substrates from nmos devices. These wells have a number of design rules associated with them. Deep n-wells have large minimum width requirements, as well as very large minimum spacing requirements between 2 distinct deep n-wells.. They must also have a fence of n-well around it that overlaps by a minimum amount on both the inside and outside.
+
+High voltage implants in transistors allow the n-well under the p type transistor, as well as the source and drain of both n and p type transistors to be tolerant of higher voltages. High voltage transistors also require thicker gate oxide layers to prevent gate punch through at higher voltages. Since the high voltage layer directly affects the transistor, it comes with a number of rules. First, the diffusion layers have greater space and width requirements. N-wells have greater spacing requirements, both to themselves and low voltage wells, and transistor gates have to be both wider and longer.
+
+### Device Rules
+
+Resistors are very complicated in the SkyWater process, and have many associated design rules. Resistors can be made with diffusion layers, polysilicon layers or p-well regions deep inside n-wells. Certain polysilicon resistors have specific design rules, such as the contact cuts must be rectangular and not square. Though, generally most designers will use the pdk design generator in magic to create resistor designs that adhere to design rules.
+
+Capacitors come in 4 distinct types in the SkyWater process; Varactors, MOScap, Vertical Parallel Plate (VPP), Metal-insulator-Metal (MiM). Varactors share similar DRC rules to MOSFETs, but with some different requirements to width, length, gate extension and contact distance from the gate. MOScaps follow the same DRC rules as MOSFETs. VPPs are also called Metal-Oxide-Metal (MOM) capacitors, and just follow the DRC rules for metal layers such as width and spacing. MiM capacitors boast much higher capacitance per unit area values than regular MOM capacitors, and have minimum and maximum width rules for the inside capacitor plate, as well as requirements for the metal plate underneath to have a certain amount of surrounding material. MiM capacitors also have aspect ratio rules, and bottom and top layer rules, and are subject to antenna rules as well.
+
+Diodes are formed by the p-n junction between the diffusion and well. These are usually unwanted parasitic devices since they are formed whenever you place down a transistor, n-well or deep n-well. When placing diodes, they follow similar DRC rules as those of diffusion, tap and well layers. They can also be used to overcome antenna rule violations.
+
+Certain devices have reference layouts created by the foundry itself, and are guaranteed to be to DRC correct, as long a the designer follows spacing requirements between these and other devices. These devices are called fixed layout devices.
+
+### Miscellaneous Rules and Latch-up, Antenna and Stress Rules
+
+Some rules in the SkyWater process are not layer specific. Off grid rule specifies that all geometry in a design layout must have vertex coordinates that fall on a grid point in the manufacturing grid. Any non-manhattan shapes must have vertices that fall on grid points only. Angle limitation rules demand certain layers to have only manhattan geometry, while the others are limited to only 45 degree geometry. Seal rings have certain design rules of themselves, but magic presents DRC correct seal ring layouts that fit the dimensions of the chip automatically.
+
+When a parasitic p-n junction becomes forward biased, it creates a condition called Latch-up. This can cause effectively pnp and npn transistors to form across the well, tap and substrate layers, thus shorting the entire chip and causing it to get stuck in this state till the power supply is removed. Thus, design rules for latch-up conditions specify a minimum distance between a tap connection and diffusion region anywhere on the design.
+
+Antenna rules dictate how to avoid electrical manufacturing failures, and depend on chip layout at specific points during the manufacturing process. For example, large portions of routing material can build charge during the manufacturing process and then cause high voltage punch throughs in components nearby, such as transistor gates. Thus, antenna rules apply to any long strips of material with one end tied to a transistor gate and the other rule untied, or tied to another layer above it. One way to avoid antenna violations is to provide a path to ground through a parasitic p-n junction of diffusion, anywhere on the material that violates the rule.
+
+Stress rules are related to metal delamination, and metal cracking and other damage caused by stress on the chip during wire bonding and sawing. To mitigate this we have slotting rules, which state that wide metal layers should be perforated with slots to keep any part of the metal from exceeding some maximum width. These slots should be in the direction of current flow.
+
+### Density Rules
+
+Metal route layers that are not flat can cause layers above them to not be deposited as flat surface either. Metal layers undergo a polishing step, though the existing metal before polishing must have a certain amount of flatness as well. Oxide layers are added between metal layers, that deposit in a snow coverage-like pattern. If there are large spaces 2 metal routes on the same layer, the oxide layer will have bumps, and subsequent layers created above them too. To overcome this, fill material is used between the gaps of the metal, to achieve a certain 'density' of material.
+
+There are automated tools that can generate fill patterns in a layout to meet density requirements. Though in analog designs, fill patterns can create unwanted capacitances hat are difficult to analyse. There are certain conditions where 2 metal layers are just spaced apart enough that there isn't enough room between them to add fill material, yet there is enough space to cause bumps in the layers above.
+
+### Recommended, Manufacturing and ERC Rules
+
+Recommended rules are design rules that can be followed to make a design more robust, and improve yield. These include rules such as having more than one contact cut per via, and violating these will not cause the foundry to reject the design. Though, as recommended rules increase production yield, they are very handy for production designs.
+
+When creating test designs however, the bare minimum rules that must be followed so that the foundry does not immediately reject your design are called Manufacturing rules. These are listed below.
+- Width rules
+- Spacing (notch) rules
+- Minimum area rules
+- Overlap (surround) rules
+- Extension rules
+- Angle and off-grid rules
+- Density rules (acceptable, rarely)
+
+Rule violations that persist in the final design require a waiver from the manufacturer, which is a statement that verifies that the customer holds full liability for any risks arising from such violations and not the foundry.
+
+Electrical Rule Checks (ERC) are checks for a layout that is DRC correct but cause certain failure due to electrical problems. These are,
+1. Electromigration (max. current density) - damage to metal wires for carrying too much current over a period of time
+2. Overvoltage conditions - occur especially when high and low voltage circuit designs are combined.
+
+#Day 3 Lab
+## Width and spacing rules
+
+For this lab a git clone link was given which contained all the exercises for the DRC. This is the link: https://github.com/RTimothyEdwards/vsd_drc_lab
+
+Exercise_1.mag has a width and spacing error:
+
+   ![DRC_exercise_1 layout](https://user-images.githubusercontent.com/109404741/195697921-d6f7ec9f-1027-4ceb-b1b3-ba33656f4960.PNG)
+
+The first error is of a width as follows:
+
+![1_DRC_report_width](https://user-images.githubusercontent.com/109404741/195698065-744d8e66-71de-44f6-a1be-201bb27256ea.PNG)
+
+This error can be fixed by selecting the layer and using the command ```box grow e lenght_value``` and then filling the empty area with the metal 2 layer. This will fix the width error.
+![fixed width](https://user-images.githubusercontent.com/109404741/195698536-a918e4ab-1dbf-42c4-b00d-46bdb066ba65.PNG)
+
+The next error is a spacing error between two metal 1 layers:
+![Metal_spacing DRC](https://user-images.githubusercontent.com/109404741/195698859-8e3c413a-4f22-4830-a072-a7c21aec39a8.PNG)
+
+This error can be fixed by selecting one of the two layers and moving that layer away using the shift key with the num keys 4,6,8 for directions. The DRC error was fixed using this method.
+![metal spacing error fixed](https://user-images.githubusercontent.com/109404741/195699063-b3e24135-550d-4be4-a2fb-159bcf33a774.PNG)
+
+The next error is a wide spacing error:
+![Wide spacing error fixed](https://user-images.githubusercontent.com/109404741/195699460-d0ecc748-d355-4b39-8478-3bd74346fd7a.PNG)
+This is a simple fix, and can be done by moving either of the boxes by a distance of 0.4um away, as shown below.
+![Wide spacing error fixed](https://user-images.githubusercontent.com/109404741/195699656-d8e0edc7-1fa6-40df-83be-d34eda583265.PNG)
+
+The next error is due to the violation of the notch rule as shown below:
+![notch error](https://user-images.githubusercontent.com/109404741/195699834-3f0160d4-a08b-41e0-a64d-588a034978cc.PNG)
+
+The error is because the spacing between the notch side is less than the specified distance. This can be fixed by selecting any one side of the notch by pressing the A key for selecting the area and stretching it away from the other side. This fixed the error as shown below:
+![Notch error fixed](https://user-images.githubusercontent.com/109404741/195700181-d70c770b-1bdc-4dd8-a1b6-108cda563aac.PNG)
+
+## Via rules
+
+Let us load the file exercise2.mag and look at exercise 2a. Here, when we run a DRC report, we see it is a simple via size error.
+![via_overlap_error](https://user-images.githubusercontent.com/109404741/195701433-a69c03b5-13f9-4091-872c-04686c0a35c0.PNG)
+
+We can fix this easily by doing an area select and stretch operation twice. Once horizontally, and once vertically.
+![via_overlap_error_fixed](https://user-images.githubusercontent.com/109404741/195701642-7cc7b2e7-7e57-4fdc-b295-b90286dd95e4.PNG)
+
+The next error is of a minimum area of metal 1 layer as shown below:
+![minimum area drc error](https://user-images.githubusercontent.com/109404741/195702203-33839a94-254a-4ffe-94dc-4124c400eaa6.PNG)
+
+This error can be fixed by changing the dimension of the area so that the area is almost that of the specified area. This is done as follows:
+![minimum area drc error_fixed](https://user-images.githubusercontent.com/109404741/195702513-866ca25d-5358-4586-b1e0-e95d715a02be.PNG)
+
+Next, let us look at example 3b. Here we have a minimum hole area violation, though Magic does not show it as one. To se this DRC error, we need to run Magic in the full DRC mode. We can do this by clicking on the menu button DRC > DRC complete. Next we must tell Magic to update the DRC count, and then run a DRC report.
+![minimum hole area_error](https://user-images.githubusercontent.com/109404741/195702879-2bf50b96-f0bf-47cf-a555-8f801082fdef.PNG)
+
+To fix this minimum hole error we can select the hole area using the box and then type the command ```box grow c length_val```. This will increase the width and height eqaully which is equal to the length_val. Then we can delete the extra metal area. This will fix the error as follows:
+![minimum hole area_error_fixed](https://user-images.githubusercontent.com/109404741/195703264-94068938-6375-4065-94d6-1e519539d91f.PNG)
+
+## Wells and Deep Nwells
+
+Let's look at exercise4.mag which has wells and taps, so our DRC check needs to be set at full to check for these. Let us see example 4a. We have a basic well error, since the wells do not have taps. The n-well shows an error as it is currently floating, though the "p-well" does not since this process doesn't actually consider p-wells unless they are in deep n-wells, and are instead counted as p-substrates.
+![nwell_notap_error](https://user-images.githubusercontent.com/109404741/195703623-3e0f5242-b9f2-4d10-8f45-7f7f5c8d3ce7.PNG)
+
+To fix this, we first paint a layer of n type material into the n well. The layer is called nsubstratendiff. Though this does not fix the DRC error.The n well must not be floating, so the tap should be connected to a layer of local interconnect. So let us do this by painting a layer of nsubstratencontact. While this gets rid of the n-well DRC error, it creates smaller errors like overlap and surround.
+![nwell_tap_contact_error](https://user-images.githubusercontent.com/109404741/195703775-1d9fe89a-d9db-4dc8-906f-41b9303920c2.PNG)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
 
 
