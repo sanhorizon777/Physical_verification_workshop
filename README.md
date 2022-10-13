@@ -535,6 +535,40 @@ This above command will generate a GDS file in the mag folder. To read the GDS f
 Now, we can view just the metal2 layer in the layout to confirm that the fill patterns align perfectly after the merge.
 ![Density errors_fixed_m2fill](https://user-images.githubusercontent.com/109404741/195710973-9ab0c4cb-7d44-46a4-80e9-0ded3a45511b.PNG)
 
+# Day 4 Physical verification using OpenLane
+This day of the workshop gave a brief understanding of how OpenLane flows help in physical verification.
+
+## OpenLane
+OpenLane flow is a fully automated flow in which we have to provide the verilog files as an input (i.e., the RTL code) and also the PDK (in this case the sky130 PDK). 
+
+These files go through a series of processes like RTL synthesis, Floor planning, placement, Routing, R-C extraction and then generated the GDS file.
+
+The following image shows the full flow chart of OpenLane flow:
+![OpenLane Flow chart](https://user-images.githubusercontent.com/109404741/195712006-15722723-d847-44a9-944f-ded7074a440c.PNG)
+
+![Synthesis in 2 steps](https://user-images.githubusercontent.com/109404741/195712133-d19e022a-215f-4eed-aadc-958702459be7.PNG)
+
+![STA](https://user-images.githubusercontent.com/109404741/195712154-0a7b66e9-b749-4f6a-8e97-73f881d5896a.PNG)
+
+![Floor Planning](https://user-images.githubusercontent.com/109404741/195712219-b638e572-319f-4434-8c4c-21ff68c1870d.PNG)
+
+![Placement](https://user-images.githubusercontent.com/109404741/195712237-5ba3a951-18eb-408c-a341-cc09da71a812.PNG)
+
+![Clock Tree Synthesis](https://user-images.githubusercontent.com/109404741/195712306-204e8e55-db3c-4df5-941c-7b23f67cee92.PNG)
+
+![Global Routing](https://user-images.githubusercontent.com/109404741/195712448-f2bd7fcb-3795-42da-96f1-cd48a967560f.PNG)
+
+![Antenna diode insertion](https://user-images.githubusercontent.com/109404741/195712471-4322c2f2-dfd0-470d-95fd-0db5deb4db8c.PNG)
+
+![Detailed Routing](https://user-images.githubusercontent.com/109404741/195712626-67414a6d-9f2a-4668-8e34-056c59bfe7dc.PNG)
+
+![RC extraction](https://user-images.githubusercontent.com/109404741/195712647-b23a3b5a-435e-4381-82a2-6c41149633da.PNG)
+
+![GDSII](https://user-images.githubusercontent.com/109404741/195712718-f3e9936f-77b8-4049-8663-6e323236af17.PNG)
+
+![Physical Verification](https://user-images.githubusercontent.com/109404741/195712731-47c1a816-0533-46f0-a1b6-9bf6985fa5e4.PNG)
+
+# Day 5 - Running Layout Vs. Schematic (LVS)
 
 
 
