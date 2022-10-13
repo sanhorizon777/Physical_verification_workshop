@@ -107,6 +107,20 @@ Next, we must set some parameters that are only adjustable in the layout which w
 
 ![layout inv](https://user-images.githubusercontent.com/109404741/195666266-96f8a80c-c29b-43d8-b03e-ca8b2ed6d612.PNG)
 
+After saving and autowriting the layout we have to do the extration. This will create an intermediate file with .ext extention. Then we will convert this file to a SPICE netlist which will be next used by netgen for running LVS check of the inverter circuit. For this we write the following commands in the command window:
+
+```extract do local```  -> This command ensures that magic writes all results to the local directory
+
+```extract all```       -> This command does the actual extraction.
+
+```ext2spice```         -> This command converts the .ext file to the SPICE netlist
+
+Now we can run LVS by entering the netgen subdirectory and using the command ```netgen -batch lvs "../mag/inverter.spice inverter" "../xschem/inverter.spice inverter"```. We should always write the layout spice netlist file name first and then the schematic spice netlist second. The result after running LVS is as follows:
+
+![lvs result](https://user-images.githubusercontent.com/109404741/195669232-74f4525b-10b3-448a-9fb7-00a0f66fb036.PNG)
+
+From the above picture we can see the result after running LVS. At the end it says the the two netlists match. So, we can confirm that our layout perfectly complies
+with the Schematic.
 
 
 
