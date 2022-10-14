@@ -672,8 +672,38 @@ There is a mismatch error. As marked above the two errors are that two circuit n
 
 ```lvs "netA.spice test" "netB.spice test"```
 
+Below the result after running LVS in subcircuit level:
+![lvs result 2](https://user-images.githubusercontent.com/109404741/195829282-3340215a-902c-4704-a1f7-0f063f4ae086.PNG)
 
+The circuits are now matching.
 
+Next let's modify the circuit netlist A pins as shown below:
+![modified netA spice](https://user-images.githubusercontent.com/109404741/195830097-f84192e7-fa85-4f85-af76-e12b5c21cc64.PNG)
+
+After running LVS between the modified netlist A and netlist B we get the following LVS result:
+![lvs result 2](https://user-images.githubusercontent.com/109404741/195830243-fe95132b-d86a-41b2-be79-3cd1acf93b75.PNG)
+As we can see the circuits are matching. This is because Netgen doesn't care about the pin order, it only cares about the pin names. As long as the pin names are same it will always match. This is shown below in the comp.out file as a result of the lvs:
+![comp_out_post_lvs2](https://user-images.githubusercontent.com/109404741/195830484-bb8e4edd-9338-48a0-ab17-3d36bd162178.PNG)
+
+Next we change the pins C to A and vice-versa and then run LVS between the netA.spice and netB.spice. Below is the result:
+![netA C to A modified lvs result](https://user-images.githubusercontent.com/109404741/195830767-22d72d7e-19b7-488e-bf00-0f233f4a7b9e.PNG)
+ Now netlists match at the subcircuit level but at the top level they mismatch.
+ 
+ For exercise 3 we have again two netlists named netA.spice and netB.spice as shown below:
+ ![netlists A and B](https://user-images.githubusercontent.com/109404741/195831287-975a6cea-cf7f-4eb7-aaa7-77558ec6b252.PNG)
+
+Here we have 3 subcircuit cells but with no definitions. If we have a subcircuit with no entry or which is empty then Netgen treats it as a blackbox entry.
+
+Running LVS on the two netlist we get the following results:
+![lvs result 1](https://user-images.githubusercontent.com/109404741/195831439-941c7a24-f77d-4b45-871b-6fd33f787107.PNG)
+
+Netgen runs on these empty cells or blackboxes and since the three pins of the cell are not connected to any device inside (as it is empty) it says 3 disconnected pins for all the 3 subcircuits with no definition.
+
+## Acknowledgements
+
+- [R. Timothy Edwards](https://github.com/RTimothyEdwards)
+- [Kunal Ghosh](https://github.com/kunalg123)
+- [VSD-IAT](https://vsdiat.com/)
 
 
 
