@@ -637,6 +637,7 @@ Netgen also offers a second output format in JSON which works in a simple GUI wr
 For this lab the a git clone link was provided for the files required. The git clone can be found here: https://github.com/RTimothyEdwards/vsd_lvs_lab.git
 
 The first exercise consists of two netlists which are used for running LVS using Netgen. The netlists are shown below in the terminal using the command ```cat netlist_name``` :
+
 ![The two netlists](https://user-images.githubusercontent.com/109404741/195825728-b265bae5-e24a-457f-a045-3cb885d60bdc.PNG)
 
 For running Netgen we type the command ```netgen``` which and we type the command in the window 
@@ -644,28 +645,39 @@ For running Netgen we type the command ```netgen``` which and we type the comman
 ```lvs netA.spice netB.spice```
 
 This command will run the LVs on the two spice netlists and generate a file named comp.out in the local folder. This process is shown below:
+
 ![lvs interpret_1](https://user-images.githubusercontent.com/109404741/195826271-822191f1-5d3f-4c18-a97e-032e77bbf725.PNG)
 
 The result of the LVs is show below:
+
 ![lvs output](https://user-images.githubusercontent.com/109404741/195826411-d376f19b-e152-4492-a6f4-9dac2e6657d0.PNG)
+
 This shows that the two netlists match.
 
 Now let us create a mismatch by changing the netA.spice file as follows and then observe the results. The change in the netlist file is shown below:
+
 ![netA spice changed netlist](https://user-images.githubusercontent.com/109404741/195826768-c253f648-e764-4e27-9808-4ed59de300fd.PNG)
+
 The pin name is changed in the circled location from the orignal pin.
 
 Now let us run LVS between the two netlists. But, since we didn't close the Netgen window after running the previous LVS so it is still in the memory and running next LVS after this will lead to errors.  So, first we should clean the memory from previous LVS results. The command ```reinitialize``` will clear the memory and then we use the command ```lvs netA.spice netB.spice``` to run the LVS. The following is the result after running the LVS:
+
 ![mismatch lvs result](https://user-images.githubusercontent.com/109404741/195827291-592014e9-8d29-49ac-8569-07276b0ca7ad.PNG)
+
 Here, we can see that the netlists do not match. Let us open the comp.out file for more information regarding the mismatch. The comp.out file is shown below:
+
 ![second comp out](https://user-images.githubusercontent.com/109404741/195827460-9f75f935-4b3f-4e89-8e4c-73ed443372c0.PNG)
 
 ![fan out comp_out](https://user-images.githubusercontent.com/109404741/195827558-b5ba494f-23f0-4fc7-8c8d-9ecc2bea4f33.PNG)
+
 As it is clear from the above picture that amount of fanout from pin 2 of cell3 instantiation 3 in circuit 1 (netA.spice) is 2 and that of in circuit 2 (netB.spice) is 3. So, the fanouts don't match. This is similar in all the three cells.
 
 The next exercise also has two netlists as shown below:
+
 ![2 netlists (subckts)](https://user-images.githubusercontent.com/109404741/195828006-53b9d3eb-b5af-4e56-be87-9727654e6efd.PNG)
 
 As it can been seen from the above image that the two netlists are same. So, running LVS will show no mismatch error. The LVs results are shown below:
+
 ![lvs result 1](https://user-images.githubusercontent.com/109404741/195828333-7e67745b-7935-4cb6-9e9c-39e49abe30ab.PNG)
 
 There is a mismatch error. As marked above the two errors are that two circuit netlists contains 0 devices. This is because the netlists contains a definition (.subckt) which is not instantiated. So, if we don't specify Netgen to work at the subcircuit level it will work at the toplevel by default and show the errors as shown above. This can be achieved by typing the subckt names in the LVS argument as shown below:
@@ -673,28 +685,37 @@ There is a mismatch error. As marked above the two errors are that two circuit n
 ```lvs "netA.spice test" "netB.spice test"```
 
 Below the result after running LVS in subcircuit level:
+
 ![lvs result 2](https://user-images.githubusercontent.com/109404741/195829282-3340215a-902c-4704-a1f7-0f063f4ae086.PNG)
 
 The circuits are now matching.
 
 Next let's modify the circuit netlist A pins as shown below:
+
 ![modified netA spice](https://user-images.githubusercontent.com/109404741/195830097-f84192e7-fa85-4f85-af76-e12b5c21cc64.PNG)
 
 After running LVS between the modified netlist A and netlist B we get the following LVS result:
+
 ![lvs result 2](https://user-images.githubusercontent.com/109404741/195830243-fe95132b-d86a-41b2-be79-3cd1acf93b75.PNG)
+
 As we can see the circuits are matching. This is because Netgen doesn't care about the pin order, it only cares about the pin names. As long as the pin names are same it will always match. This is shown below in the comp.out file as a result of the lvs:
+
 ![comp_out_post_lvs2](https://user-images.githubusercontent.com/109404741/195830484-bb8e4edd-9338-48a0-ab17-3d36bd162178.PNG)
 
 Next we change the pins C to A and vice-versa and then run LVS between the netA.spice and netB.spice. Below is the result:
+
 ![netA C to A modified lvs result](https://user-images.githubusercontent.com/109404741/195830767-22d72d7e-19b7-488e-bf00-0f233f4a7b9e.PNG)
+
  Now netlists match at the subcircuit level but at the top level they mismatch.
  
  For exercise 3 we have again two netlists named netA.spice and netB.spice as shown below:
+ 
  ![netlists A and B](https://user-images.githubusercontent.com/109404741/195831287-975a6cea-cf7f-4eb7-aaa7-77558ec6b252.PNG)
 
 Here we have 3 subcircuit cells but with no definitions. If we have a subcircuit with no entry or which is empty then Netgen treats it as a blackbox entry.
 
 Running LVS on the two netlist we get the following results:
+
 ![lvs result 1](https://user-images.githubusercontent.com/109404741/195831439-941c7a24-f77d-4b45-871b-6fd33f787107.PNG)
 
 Netgen runs on these empty cells or blackboxes and since the three pins of the cell are not connected to any device inside (as it is empty) it says 3 disconnected pins for all the 3 subcircuits with no definition.
