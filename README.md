@@ -656,7 +656,21 @@ The pin name is changed in the circled location from the orignal pin.
 
 Now let us run LVS between the two netlists. But, since we didn't close the Netgen window after running the previous LVS so it is still in the memory and running next LVS after this will lead to errors.  So, first we should clean the memory from previous LVS results. The command ```reinitialize``` will clear the memory and then we use the command ```lvs netA.spice netB.spice``` to run the LVS. The following is the result after running the LVS:
 ![mismatch lvs result](https://user-images.githubusercontent.com/109404741/195827291-592014e9-8d29-49ac-8569-07276b0ca7ad.PNG)
+Here, we can see that the netlists do not match. Let us open the comp.out file for more information regarding the mismatch. The comp.out file is shown below:
+![second comp out](https://user-images.githubusercontent.com/109404741/195827460-9f75f935-4b3f-4e89-8e4c-73ed443372c0.PNG)
 
+![fan out comp_out](https://user-images.githubusercontent.com/109404741/195827558-b5ba494f-23f0-4fc7-8c8d-9ecc2bea4f33.PNG)
+As it is clear from the above picture that amount of fanout from pin 2 of cell3 instantiation 3 in circuit 1 (netA.spice) is 2 and that of in circuit 2 (netB.spice) is 3. So, the fanouts don't match. This is similar in all the three cells.
+
+The next exercise also has two netlists as shown below:
+![2 netlists (subckts)](https://user-images.githubusercontent.com/109404741/195828006-53b9d3eb-b5af-4e56-be87-9727654e6efd.PNG)
+
+As it can been seen from the above image that the two netlists are same. So, running LVS will show no mismatch error. The LVs results are shown below:
+![lvs result 1](https://user-images.githubusercontent.com/109404741/195828333-7e67745b-7935-4cb6-9e9c-39e49abe30ab.PNG)
+
+There is a mismatch error. As marked above the two errors are that two circuit netlists contains 0 devices. This is because the netlists contains a definition (.subckt) which is not instantiated. So, if we don't specify Netgen to work at the subcircuit level it will work at the toplevel by default and show the errors as shown above. This can be achieved by typing the subckt names in the LVS argument as shown below:
+
+```lvs "netA.spice test" "netB.spice test"```
 
 
 
