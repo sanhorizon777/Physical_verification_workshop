@@ -632,6 +632,30 @@ The run-time or terminal output that gets created by Netgen is actually only a s
 
 Netgen also offers a second output format in JSON which works in a simple GUI written in python, and is available as part of the Netgen installation. It is accessed by the command `netgen -gui`. One advantage of this view is that columns are not truncated like those in the terminal output due to the limited character length per line.
 
+## Day 5 Lab
+
+For this lab the a git clone link was provided for the files required. The git clone can be found here: https://github.com/RTimothyEdwards/vsd_lvs_lab.git
+
+The first exercise consists of two netlists which are used for running LVS using Netgen. The netlists are shown below in the terminal using the command ```cat netlist_name``` :
+![The two netlists](https://user-images.githubusercontent.com/109404741/195825728-b265bae5-e24a-457f-a045-3cb885d60bdc.PNG)
+
+For running Netgen we type the command ```netgen``` which and we type the command in the window 
+
+```lvs netA.spice netB.spice```
+
+This command will run the LVs on the two spice netlists and generate a file named comp.out in the local folder. This process is shown below:
+![lvs interpret_1](https://user-images.githubusercontent.com/109404741/195826271-822191f1-5d3f-4c18-a97e-032e77bbf725.PNG)
+
+The result of the LVs is show below:
+![lvs output](https://user-images.githubusercontent.com/109404741/195826411-d376f19b-e152-4492-a6f4-9dac2e6657d0.PNG)
+This shows that the two netlists match.
+
+Now let us create a mismatch by changing the netA.spice file as follows and then observe the results. The change in the netlist file is shown below:
+![netA spice changed netlist](https://user-images.githubusercontent.com/109404741/195826768-c253f648-e764-4e27-9808-4ed59de300fd.PNG)
+The pin name is changed in the circled location from the orignal pin.
+
+Now let us run LVS between the two netlists. But, since we didn't close the Netgen window after running the previous LVS so it is still in the memory and running next LVS after this will lead to errors.  So, first we should clean the memory from previous LVS results. The command ```reinitialize``` will clear the memory and then we use the command ```lvs netA.spice netB.spice``` to run the LVS. The following is the result after running the LVS:
+![mismatch lvs result](https://user-images.githubusercontent.com/109404741/195827291-592014e9-8d29-49ac-8569-07276b0ca7ad.PNG)
 
 
 
