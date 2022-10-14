@@ -699,7 +699,7 @@ Running LVS on the two netlist we get the following results:
 
 Netgen runs on these empty cells or blackboxes and since the three pins of the cell are not connected to any device inside (as it is empty) it says 3 disconnected pins for all the 3 subcircuits with no definition.
 
-## Acknowledgements
+# Acknowledgements
 
 - [R. Timothy Edwards](https://github.com/RTimothyEdwards)
 - [Kunal Ghosh](https://github.com/kunalg123)
