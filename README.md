@@ -399,7 +399,7 @@ Electrical Rule Checks (ERC) are checks for a layout that is DRC correct but cau
 1. Electromigration (max. current density) - damage to metal wires for carrying too much current over a period of time
 2. Overvoltage conditions - occur especially when high and low voltage circuit designs are combined.
 
-#Day 3 Lab
+# Day 3 Lab
 ## Width and spacing rules
 
 For this lab a git clone link was given which contained all the exercises for the DRC. This is the link: https://github.com/RTimothyEdwards/vsd_drc_lab
